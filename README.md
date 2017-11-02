@@ -20,4 +20,10 @@ twitter_ids = ['xxx', 'xxx']
 
 ```
 
-Then conduct a schedule to run `twitter2weibo.py`, on a server.
+On a server, install missing packages:
+
+```sh
+pip install weibo, tweepy
+```
+
+Then conduct a schedule to run `twitter2weibo.py` on the server.

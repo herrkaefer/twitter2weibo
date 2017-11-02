@@ -21,7 +21,7 @@ pkfile = 'pickledata.pk'
 
 try:
     with open(pkfile, 'rb') as fi:
-      records = pickle.load(fi)
+        records = pickle.load(fi)
 except EnvironmentError:
     records = {}
     for id in twitter_ids:
