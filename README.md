@@ -1,6 +1,8 @@
-Repost interested tweets to Sina Weibo.
+`twitter2weibo`: Repost interested tweets to Sina Weibo.
 
-There is an ignored file `appconfig.py` which list some private information related to Weibo and Twitter app settings. It looks like:
+# How to use
+
+First, create Twitter and Weibo apps. Put private settings into a `appconfig.py` file along with `twitter2weibo.py`, which looks like:
 
 ```py
 t_consumer_key = 'xxx'
@@ -17,3 +19,5 @@ w_token = 'xxx'
 twitter_ids = ['xxx', 'xxx']
 
 ```
+
+Then conduct a schedule to run `twitter2weibo.py`, on a server.
