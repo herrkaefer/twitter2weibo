@@ -4,16 +4,15 @@
 # 2017.11
 
 import tweepy
+from weibo import Client
 import pickle
 from datetime import datetime, timedelta
-from weibo import Client
 import urllib
 import sys
 import time
 
-# Reposted Twitter user IDs
-# HistoryInPix, ClassicPixs
-twitter_ids = ['1557315432', '1407123690']
+import appconfig
+
 
 # ----------------------------------------------------------------------------
 # Load last creation dates
