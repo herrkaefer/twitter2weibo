@@ -20,16 +20,24 @@ import appconfig as cfg
 # Load last creation dates
 
 pkfile = u'pickledata.pk'
+needDump = False
 
 try:
     with open(pkfile, 'rb') as fi:
         records = pickle.load(fi)
+    for id in cfg.twitter_ids:
+        if records.get(id) is None:
+            records[id] = {'last_date': datetime.now() - timedelta(hours=10)}
+            needDump = True
 except EnvironmentError:
+    needDump = True
     records = {}
     for id in cfg.twitter_ids:
         records[id] = {'last_date': datetime.now() - timedelta(hours=10)}
-    with open(pkfile, 'wb') as fi:
-        pickle.dump(records, fi)
+finally:
+    if needDump:
+        with open(pkfile, 'wb') as fi:
+            pickle.dump(records, fi)
 
 # ----------------------------------------------------------------------------
 # Collect new tweets
