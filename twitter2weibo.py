@@ -20,11 +20,10 @@ print("Run at: " + str(datetime.now()) + "\n")
 # ----------------------------------------------------------------------------
 # Load last creation dates
 
-pkfile = u'pickledata.pk'
 needDump = False
 
 try:
-    with open(pkfile, 'rb') as fi:
+    with open(cfg.pkfile, 'rb') as fi:
         records = pickle.load(fi)
     for id in cfg.twitter_ids:
         if records.get(id) is None:
@@ -37,7 +36,7 @@ except EnvironmentError:
         records[id] = {'last_date': datetime.now() - timedelta(hours=10)}
 finally:
     if needDump:
-        with open(pkfile, 'wb') as fi:
+        with open(cfg.pkfile, 'wb') as fi:
             pickle.dump(records, fi)
 
 # ----------------------------------------------------------------------------
@@ -94,8 +93,10 @@ for tweet in reversed(tweets):
         sys.exit()
     finally:
         print("--- finally: update records to disk.")
-        with open(pkfile, 'wb') as fi:
+        with open(cfg.pkfile, 'wb') as fi:
             pickle.dump(records, fi)
         # Wait some time
         print("wait a minute.")
         time.sleep(60) # 1 minutes
+
+print("done.")
