@@ -5,16 +5,17 @@
 # 2017.11
 
 import tweepy
-# from weibo import Client
 import weibo
 import pickle
 from datetime import datetime, timedelta
 import urllib
 import sys
 import time
-
 import appconfig as cfg
 
+
+print("--------------------------------------")
+print("Run at: " + str(datetime.now()) + "\n")
 
 # ----------------------------------------------------------------------------
 # Load last creation dates
