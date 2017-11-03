@@ -27,13 +27,13 @@ try:
         records = pickle.load(fi)
     for id in cfg.twitter_ids:
         if records.get(id) is None:
-            records[id] = {'last_date': datetime.now() - timedelta(hours=10)}
+            records[id] = {'last_date': datetime.now() - timedelta(hours=12)}
             needDump = True
 except EnvironmentError:
     needDump = True
     records = {}
     for id in cfg.twitter_ids:
-        records[id] = {'last_date': datetime.now() - timedelta(hours=10)}
+        records[id] = {'last_date': datetime.now() - timedelta(hours=12)}
 finally:
     if needDump:
         with open(cfg.pkfile, 'wb') as fi:
