@@ -1,45 +1,49 @@
 #!/usr/bin/env python
+# encoding: utf-8
 # Repost tweets of specific user to Sina Weibo
 # Author: LIU Yang <gloolar@gmail.com>
 # 2017.11
 
 import tweepy
-from weibo import Client
+# from weibo import Client
+import weibo
 import pickle
 from datetime import datetime, timedelta
 import urllib
 import sys
 import time
 
-import appconfig
+import appconfig as cfg
 
 
 # ----------------------------------------------------------------------------
 # Load last creation dates
 
-pkfile = 'pickledata.pk'
+pkfile = u'pickledata.pk'
 
 try:
     with open(pkfile, 'rb') as fi:
         records = pickle.load(fi)
 except EnvironmentError:
     records = {}
-    for id in twitter_ids:
-        records[id] = {'last_date': datetime.now() - timedelta(hours=2.5)}
+    for id in cfg.twitter_ids:
+        records[id] = {'last_date': datetime.now() - timedelta(hours=10)}
     with open(pkfile, 'wb') as fi:
         pickle.dump(records, fi)
 
 # ----------------------------------------------------------------------------
 # Collect new tweets
 
-t_auth = tweepy.OAuthHandler(t_consumer_key, t_consumer_secret)
-t_auth.set_access_token(t_access_token, t_access_token_secret)
+t_auth = tweepy.OAuthHandler(cfg.t_consumer_key, cfg.t_consumer_secret)
+t_auth.set_access_token(cfg.t_access_token, cfg.t_access_token_secret)
 t_api = tweepy.API(t_auth)
 
 tweets = []
 
-for user_id in twitter_ids:
+for user_id in cfg.twitter_ids:
+    print("checking user with id: " + user_id)
     for status in tweepy.Cursor(t_api.user_timeline, id=user_id).items():
+        # print("created at: " + str(status.created_at))
         if status.created_at < records[user_id]['last_date']:
             break
 
@@ -56,27 +60,33 @@ for user_id in twitter_ids:
                 'creation_date': status.created_at})
 
 if len(tweets) == 0:
+    print("no new tweets.")
     sys.exit()
 else:
-    print("%d new tweets got" % len(tweets))
+    print("%d new tweets got." % len(tweets))
     # print(tweets)
 
 # ----------------------------------------------------------------------------
 # Post to Weibo, and update last date records
 
-w_client = Client(w_api_key, w_api_secret, w_redirect_uri, w_token)
+w_client = weibo.Client(cfg.w_api_key, cfg.w_api_secret, cfg.w_redirect_uri, cfg.w_token)
 
 for tweet in reversed(tweets):
-    w_status = tweet['text'] + ' (RT @' + tweet['author_screen_name'] + ')'
-    urllib.urlretrieve(tweet['media_urls'][0], 'temp.jpg')
-    w_client.post('statuses/share', status=w_status, pic=open('temp.jpg', 'rb'))
-    # Udpate last tweet date for author_id
-    records[tweet['author_id']]['last_date'] = tweet['creation_date']
-    # Wait some time
-    time.sleep(60*3) # 3 minutes
-
-# ----------------------------------------------------------------------------
-# Save records to disk
-with open(pkfile, 'wb') as fi:
-    pickle.dump(records, fi)
-
+    print("post to weibo: ")
+    print(tweet)
+    w_status = tweet['text'] #+ ' (RT @' + tweet['author_screen_name'] + ')'
+    try:
+        urllib.urlretrieve(tweet['media_urls'][0], 'temp.jpg')
+        w_client.post('statuses/share', status=w_status, pic=open('temp.jpg', 'rb'))
+        # Udpate last tweet date for author_id
+        records[tweet['author_id']]['last_date'] = tweet['creation_date']
+    except:
+        print("Error happened. Exit.")
+        sys.exit()
+    finally:
+        print("--- finally: update records to disk.")
+        with open(pkfile, 'wb') as fi:
+            pickle.dump(records, fi)
+        # Wait some time
+        print("wait a minute.")
+        time.sleep(60) # 1 minutes
