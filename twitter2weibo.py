@@ -52,7 +52,7 @@ for user_id in cfg.twitter_ids:
     print("checking user with id: " + user_id)
     for status in tweepy.Cursor(t_api.user_timeline, id=user_id).items():
         # print("created at: " + str(status.created_at))
-        if status.created_at < records[user_id]['last_date']:
+        if status.created_at <= records[user_id]['last_date']:
             break
 
         author_id = status.author.id_str
