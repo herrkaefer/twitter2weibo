@@ -88,7 +88,8 @@ for tweet in reversed(tweets):
         w_client.post('statuses/share', status=w_status, pic=open('temp.jpg', 'rb'))
         # Udpate last tweet date for author_id
         records[tweet['author_id']]['last_date'] = tweet['creation_date']
-    except:
+    except Exception as e:
+        print(e)
         print("Error happened. Exit.")
         sys.exit()
     finally:
