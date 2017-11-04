@@ -1,4 +1,4 @@
-`twitter2weibo`: Repost interested tweets to Sina Weibo.
+`twitter2weibo`: Repost tweets of interested IDs to Sina Weibo.
 
 # How to use
 
@@ -15,7 +15,7 @@ w_api_secret = 'xxx'
 w_redirect_uri = 'xxx'
 w_token = 'xxx'
 
-# Reposted Twitter user IDs
+# Reposted Twitter IDs
 twitter_ids = ['xxx', 'xxx']
 
 ```
@@ -27,3 +27,8 @@ pip install weibo, tweepy
 ```
 
 Then conduct a schedule to run `twitter2weibo.py` on the server.
+
+# Note
+
+- Weibo has limitation of post rate, so keep your tweets timeline in a normal range.
+- Only original tweets with media are collected. Only the first picture is posted due to Weibo API limitation.
