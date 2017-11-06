@@ -9,10 +9,25 @@ import weibo
 import pickle
 from datetime import datetime, timedelta
 import urllib
+import os
 import sys
 import time
 import appconfig as cfg
 
+
+# Remove temp pidfile and exit
+def exitapp():
+    os.unlink(pidfile)
+    sys.exit()
+
+
+# ----------------------------------------------------------------------------
+# To make sure the script is not running twice at the same time
+
+pidfile = "/tmp/twitter2weibo.pid"
+if os.path.isfile(pidfile):
+    sys.exit()
+file(pidfile, 'w').write(str(os.getpid()))
 
 print("--------------------------------------")
 print("Run at: " + str(datetime.now()) + "\n")
@@ -69,7 +84,7 @@ for user_id in cfg.twitter_ids:
 
 if len(tweets) == 0:
     print("no new tweets.")
-    sys.exit()
+    exitapp()
 else:
     print("%d new tweets got." % len(tweets))
     # print(tweets)
@@ -83,21 +98,24 @@ for tweet in reversed(tweets):
     print("post to weibo: ")
     print(tweet)
     w_status = tweet['text'] #+ ' (RT @' + tweet['author_screen_name'] + ')'
+
     try:
         urllib.urlretrieve(tweet['media_urls'][0], 'temp.jpg')
         w_client.post('statuses/share', status=w_status, pic=open('temp.jpg', 'rb'))
         # Udpate last tweet date for author_id
         records[tweet['author_id']]['last_date'] = tweet['creation_date']
+        print("wait a few minutes.")
+        time.sleep(60*3) # 3 minutes
+
     except Exception as e:
         print(e)
         print("Error happened. Exit.")
-        sys.exit()
+        exitapp()
+
     finally:
-        print("--- finally: update records to disk.")
+        print("Update records to disk.")
         with open(cfg.pkfile, 'wb') as fi:
             pickle.dump(records, fi)
         # Wait some time
-        print("wait a minute.")
-        time.sleep(60) # 1 minutes
 
 print("done.")
