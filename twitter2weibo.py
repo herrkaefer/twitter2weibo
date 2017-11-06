@@ -119,3 +119,4 @@ for tweet in reversed(tweets):
         # Wait some time
 
 print("done.")
+exitapp()
