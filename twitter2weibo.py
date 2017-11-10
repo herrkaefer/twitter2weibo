@@ -21,16 +21,17 @@ def exitapp():
     sys.exit()
 
 
+print("--------------------------------------")
+print("Run at: " + str(datetime.now()) + "\n")
+
 # ----------------------------------------------------------------------------
 # To make sure the script is not running twice at the same time
 
 pidfile = "/tmp/twitter2weibo.pid"
 if os.path.isfile(pidfile):
+    print("pid file exists. exit.")
     sys.exit()
 file(pidfile, 'w').write(str(os.getpid()))
-
-print("--------------------------------------")
-print("Run at: " + str(datetime.now()) + "\n")
 
 # ----------------------------------------------------------------------------
 # Load last creation dates
@@ -64,23 +65,28 @@ t_api = tweepy.API(t_auth)
 tweets = []
 
 for user_id in cfg.twitter_ids:
-    print("checking user with id: " + user_id)
-    for status in tweepy.Cursor(t_api.user_timeline, id=user_id).items():
-        # print("created at: " + str(status.created_at))
-        if status.created_at <= records[user_id]['last_date']:
-            break
+    try:
+        print("checking user with id: " + user_id)
+        for status in tweepy.Cursor(t_api.user_timeline, id=user_id).items():
+            # print("created at: " + str(status.created_at))
+            if status.created_at <= records[user_id]['last_date']:
+                break
 
-        author_id = status.author.id_str
-        # media = status.extended_entities.get('media')
-        media = status.entities.get('media')
+            author_id = status.author.id_str
+            # media = status.extended_entities.get('media')
+            media = status.entities.get('media')
 
-        if (author_id == user_id) and (media is not None) and (not status.text.startswith('RT')):
-            tweets.append({
-                'author_id': author_id,
-                'author_screen_name': status.author.screen_name,
-                'text': status.text,
-                'media_urls': [m['media_url'] for m in media],
-                'creation_date': status.created_at})
+            if (author_id == user_id) and (media is not None) and (not status.text.startswith('RT')):
+                tweets.append({
+                    'author_id': author_id,
+                    'author_screen_name': status.author.screen_name,
+                    'text': status.text,
+                    'media_urls': [m['media_url'] for m in media],
+                    'creation_date': status.created_at})
+    except Exception as e:
+        print(e)
+        print("Error happened. Exit.")
+        exitapp()
 
 if len(tweets) == 0:
     print("no new tweets.")
