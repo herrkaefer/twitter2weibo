@@ -115,8 +115,11 @@ for tweet in reversed(tweets):
 
     except Exception as e:
         print(e)
-        print("Error happened. Exit.")
-        exitapp()
+        if str(e).startswith("20021"): # 20021 content is illegal!
+            continue
+        else:
+            print("Error happened. Exit.")
+            exitapp()
 
     finally:
         print("Update records to disk.")
