@@ -99,22 +99,25 @@ else:
 # ----------------------------------------------------------------------------
 # Post to Weibo, and update last date records
 
-w_client = weibo.Client(cfg.w_api_key, cfg.w_api_secret, cfg.w_redirect_uri, cfg.w_token)
+w_client = weibo.Client(cfg.w_api_key, cfg.w_api_secret,
+                        cfg.w_redirect_uri, cfg.w_token)
 
 for tweet in reversed(tweets):
     print("\npost to weibo: ")
     print(tweet)
-    w_status = tweet['text'] #+ ' (RT @' + tweet['author_screen_name'] + ')'
+    # w_status = tweet['text']  # + ' (RT @' + tweet['author_screen_name'] + ')'
+    w_status = tweet['text'] + ' herrkaefer.com '  # 加安全域名
 
     try:
         urllib.urlretrieve(tweet['media_urls'][0], 'temp.jpg')
-        w_client.post('statuses/share', status=w_status, pic=open('temp.jpg', 'rb'))
+        w_client.post(
+            'statuses/share', status=w_status, pic=open('temp.jpg', 'rb'))
         # Udpate last tweet date for author_id
         records[tweet['author_id']]['last_date'] = tweet['creation_date']
 
     except Exception as e:
         print(e)
-        if not str(e).startswith("20021"): # 20021 content is illegal!
+        if not str(e).startswith("20021"):  # 20021 content is illegal!
             exitapp()
 
     finally:
@@ -123,7 +126,7 @@ for tweet in reversed(tweets):
             pickle.dump(records, fi)
         # Wait some time
         print("wait a few minutes.")
-        time.sleep(60*3) # 3 minutes
+        time.sleep(60*3)  # 3 minutes
 
 print("done.")
 exitapp()
