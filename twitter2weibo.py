@@ -2,7 +2,7 @@
 # encoding: utf-8
 # Repost tweets of specific user to Sina Weibo
 # Author: LIU Yang <gloolar@gmail.com>
-# 2017.11
+# Created: 2017.11
 
 import tweepy
 import weibo
@@ -10,7 +10,6 @@ import pickle
 from datetime import datetime, timedelta
 import urllib.request
 import os
-import sys
 import time
 import appconfig as cfg
 from pid.decorator import pidfile
@@ -24,19 +23,21 @@ print("Run at: " + str(datetime.now()) + "\n")
 
 here = os.path.dirname(os.path.abspath(__file__))
 pkfile = os.path.join(here, cfg.pkfile)
+tweet_start_time = datetime.now() - timedelta(hours=8)
+
 needDump = False
 try:
     with open(pkfile, 'rb') as fi:
         records = pickle.load(fi)
     for id in cfg.twitter_ids:
         if records.get(id) is None:
-            records[id] = {'last_date': datetime.now() - timedelta(hours=8)}
+            records[id] = {'last_date': tweet_start_time}
             needDump = True
 except EnvironmentError:
     needDump = True
     records = {}
     for id in cfg.twitter_ids:
-        records[id] = {'last_date': datetime.now() - timedelta(hours=8)}
+        records[id] = {'last_date': tweet_start_time}
 finally:
     if needDump:
         with open(pkfile, 'wb') as fi:
@@ -57,11 +58,11 @@ def fetch_recent_tweets(from_datetime):
             print("checking user with id: " + user_id)
             for status in tweepy.Cursor(
                     t_api.user_timeline, id=user_id).items():
-                print("created at: " + str(status.created_at))
                 if status.created_at <= records[user_id]['last_date'] \
                    or status.created_at < from_datetime:
                     break
 
+                print("Tweet created at: " + str(status.created_at))
                 author_id = status.author.id_str
                 # media = status.extended_entities.get('media')
                 media = status.entities.get('media')
@@ -117,7 +118,7 @@ def post_to_weibo(tweets):
 
 @pidfile(piddir=here)
 def main():
-    tweets = fetch_recent_tweets(datetime.now() - timedelta(hours=8.5))
+    tweets = fetch_recent_tweets(tweet_start_time)
     post_to_weibo(tweets)
 
 
