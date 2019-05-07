@@ -106,3 +106,4 @@ venv.bak/
 pickledata.pk
 temp.jpg
 appconfig.py
+log.txt
