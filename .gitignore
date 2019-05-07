@@ -103,7 +103,7 @@ venv.bak/
 # mypy
 .mypy_cache/
 
-pickledata.pk
+*.pk
 temp.jpg
 appconfig.py
 log.txt
