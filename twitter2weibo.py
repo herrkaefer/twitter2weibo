@@ -11,8 +11,9 @@ from datetime import datetime, timedelta
 import urllib.request
 import os
 import time
-import appconfig as cfg
+import pytz
 from pid.decorator import pidfile
+import appconfig as cfg
 
 
 print("--------------------------------------")
@@ -23,28 +24,28 @@ print("Run at: " + str(datetime.now()) + "\n")
 
 here = os.path.dirname(os.path.abspath(__file__))
 pkfile = os.path.join(here, cfg.pkfile)
-tweet_start_time = datetime.now() - timedelta(hours=8)
+tweet_start_time = datetime.now(pytz.utc) - timedelta(hours=9)
 
-needDump = False
+
+# Load records of last update or create it if missing.
 try:
     with open(pkfile, 'rb') as fi:
         records = pickle.load(fi)
     for id in cfg.twitter_ids:
         if records.get(id) is None:
             records[id] = {'last_date': tweet_start_time}
-            needDump = True
 except EnvironmentError:
-    needDump = True
     records = {}
     for id in cfg.twitter_ids:
         records[id] = {'last_date': tweet_start_time}
-finally:
-    if needDump:
-        with open(pkfile, 'wb') as fi:
-            pickle.dump(records, fi)
 
 
 # ----------------------------------------------------------------------------
+def save_records():
+    with open(pkfile, 'wb') as fi:
+        pickle.dump(records, fi)
+
+
 def fetch_recent_tweets(from_datetime):
     """Collect new tweets"""
     t_auth = tweepy.OAuthHandler(cfg.t_consumer_key, cfg.t_consumer_secret)
@@ -58,10 +59,12 @@ def fetch_recent_tweets(from_datetime):
             print("checking user with id: " + user_id)
             for status in tweepy.Cursor(
                     t_api.user_timeline, id=user_id).items():
-                if status.created_at <= records[user_id]['last_date'] \
-                   or status.created_at < from_datetime:
+                # offset-naive -> offset_aware
+                tweet_created_at = \
+                    status.created_at.replace(tzinfo=pytz.timezone('UTC'))
+                if tweet_created_at <= records[user_id]['last_date'] \
+                   or tweet_created_at < from_datetime:
                     break
-
                 print("Tweet created at: " + str(status.created_at))
                 author_id = status.author.id_str
                 # media = status.extended_entities.get('media')
@@ -75,7 +78,8 @@ def fetch_recent_tweets(from_datetime):
                         'author_screen_name': status.author.screen_name,
                         'text': status.text,
                         'media_urls': [m['media_url'] for m in media],
-                        'creation_date': status.created_at})
+                        'creation_date': tweet_created_at
+                    })
     except Exception as e:
         print(e)
         return []
@@ -90,7 +94,7 @@ def post_to_weibo(tweets):
     w_client = weibo.Client(cfg.w_api_key, cfg.w_api_secret,
                             cfg.w_redirect_uri, cfg.w_token)
     try:
-        for tweet in reversed(tweets):
+        for idx, tweet in enumerate(reversed(tweets)):
             print("\npost to weibo: ")
             # w_status = tweet['text']  # + ' (RT @' + tweet['author_screen_name'] + ')'
             w_status = tweet['text'] + ' ' + cfg.secure_domain + ' '
@@ -100,19 +104,16 @@ def post_to_weibo(tweets):
                 'statuses/share', status=w_status, pic=open('temp.jpg', 'rb'))
             # Udpate last tweet date for author_id
             records[tweet['author_id']]['last_date'] = tweet['creation_date']
-            print("wait a few minutes.")
-            time.sleep(60*3)
-
+            if idx < len(tweets) - 1:
+                print("wait a minute.")
+                time.sleep(60*3)
     except Exception as e:
         print(e)
         raise
-
     finally:
         print("Update records to disk.")
         with open(pkfile, 'wb') as fi:
             pickle.dump(records, fi)
-        # Wait some time
-
     print("done.")
 
 
@@ -120,6 +121,7 @@ def post_to_weibo(tweets):
 def main():
     tweets = fetch_recent_tweets(tweet_start_time)
     post_to_weibo(tweets)
+    save_records()
 
 
 if __name__ == '__main__':

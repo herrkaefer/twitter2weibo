@@ -9,6 +9,7 @@ verify_ssl = true
 tweepy = "*"
 weibo = "*"
 pid = "*"
+pytz = "*"
 
 [requires]
 python_version = "3.6"
