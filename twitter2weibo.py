@@ -17,7 +17,7 @@ import appconfig as cfg
 
 
 print("--------------------------------------")
-print("Run at: " + str(datetime.now()) + "\n")
+print("Run at: " + str(datetime.now(pytz.utc)) + "\n")
 
 # ----------------------------------------------------------------------------
 # Load last creation dates
@@ -61,7 +61,7 @@ def fetch_recent_tweets(from_datetime):
                     t_api.user_timeline, id=user_id).items():
                 # offset-naive -> offset_aware
                 tweet_created_at = \
-                    status.created_at.replace(tzinfo=pytz.timezone('UTC'))
+                    status.created_at.replace(tzinfo=pytz.utc)
                 if tweet_created_at <= records[user_id]['last_date'] \
                    or tweet_created_at < from_datetime:
                     break
