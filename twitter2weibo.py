@@ -8,7 +8,7 @@ import tweepy
 import weibo
 import pickle
 from datetime import datetime, timedelta
-import urllib.request
+import urllib
 import os
 import time
 import pytz
@@ -99,7 +99,7 @@ def post_to_weibo(tweets):
             # w_status = tweet['text']  # + ' (RT @' + tweet['author_screen_name'] + ')'
             w_status = tweet['text'] + ' ' + cfg.secure_domain + ' '
             print(w_status)
-            urllib.request.urlretrieve(tweet['media_urls'][0], 'temp.jpg')
+            urllib.urlretrieve(tweet['media_urls'][0], 'temp.jpg')
             w_client.post(
                 'statuses/share', status=w_status, pic=open('temp.jpg', 'rb'))
             # Udpate last tweet date for author_id

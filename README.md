@@ -1,5 +1,7 @@
 `twitter2weibo`: Post tweets of interested Twitter IDs to Sina Weibo.
 
+Python version: 2.7
+
 # Demo
 
 Weibo ID [@图中看史](https://weibo.com/u/6401135522) which reposts great pictures from several Twitter IDs.
@@ -21,13 +23,12 @@ w_token = 'xxx'
 
 # Reposted Twitter IDs
 twitter_ids = ['xxx', 'xxx']
-
 ```
 
 On a server, install missing packages:
 
 ```sh
-pip install weibo, tweepy
+pip install weibo tweepy pid pytz
 ```
 
 Then conduct a schedule to run `twitter2weibo.py` on the server.
